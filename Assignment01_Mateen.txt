@@ -1,0 +1,362 @@
+function setupBox()	// function to setup all boxes as standing from 1 to 9 
+{
+	let gameBox = [];
+	
+	for (i=0 ; i<9 ; i++)	// For loop to iterate 9 times to assign numbers to each box from 1-9
+	{
+		gameBox[i] = i+1 ;
+	}
+	
+	return gameBox ; 		// array is returned to the main program with Boxes all set to play the game
+}	// end of funtion - SETUP BOX 
+
+function isBoxStanding(standingBoxes) // function to check if any Box is still standing
+{
+	if(standingBoxes.length > 0)
+	{
+		return true ; 
+	}
+		
+	return false ; 
+} // end of function - IS BOX STANDING
+	
+function displayBox(boxToDisplay)	// function to Display Boxes
+{
+	if(isBoxStanding(boxToDisplay)) // if at least more than one box is standing
+	{
+		alert("Standing Boxes are:  \n " + boxToDisplay) ; 
+	}
+		
+	else
+	{
+		alert("No Box is Standing") ; 
+	}
+}	// end of function - DISPLAY BOX
+	
+function getSumOfStandingBoxes(myBox)	// function to sum total numbers of boxes which are still standing
+{
+	let sum = 0 ;		
+	
+	for(i=0 ; i<myBox.length ; i++)	
+	{
+		sum = sum + myBox[i] ;
+	}
+			
+	return sum ; 	
+} // end of function - CHECK SUM NUMBERS
+
+function throwTurn(myBox)	// function to execute a Turn of a Player (turn means Roll of Dice)
+{
+	function rollOfDice()	// local function to throw the dice and return a random number between 1-6
+	{
+		return Math.floor((Math.random()*6)+1) ;	
+	}	// end of local function - GENERATE DICE
+
+	function singleRoll() // local function to roll the dice only once
+	{
+		let dice1 = rollOfDice() ; 
+		alert("Number on thrown Dice is: " + dice1 ) ; 
+		return dice1 ;  
+	} // end of local funtion - SINGLE ROLL
+
+	function doubleRoll() // local function to roll the dice twice
+	{
+		let dice1 = rollOfDice(); 
+		let dice2 = rollOfDice(); 
+		alert("Number on thrown Dices are: " + dice1 + " & " + dice2  ) ; 
+		return (dice1 + dice2) ; 	
+	}	// end of local funciton - DOUBLE ROLL
+		
+	alert("All eyes on the dice!") ; 
+		
+	if (getSumOfStandingBoxes(myBox) < 7)	// if sum is less than 7 then only 1 dice is to be rolled
+	{
+		return singleRoll() ; 
+	}
+	else	// if sum is more than 6 then two dices will be rolled
+	{
+		return doubleRoll() ; 
+	}
+}	// end of function - THROW TURN
+	
+function validateNumberAvailable(myBox,userChoice) // function to validate if entered number is available as Standing
+{
+	if(myBox.indexOf(userChoice)>=0)
+	{
+		return true;
+	}	
+		
+	return false ;
+} // end of function - VALIDATE NUMBER AVAILABLE
+		
+function getUsersChoice(standingBoxes,usersNumber,totalScore)	 // function to validate entry from user until it is something valid available as standing
+{
+	let choice = usersNumber ; 
+	
+	while(!(validateNumberAvailable(standingBoxes,choice)))	// while entered choice is something not from the standing boxes	
+	{
+		alert("Oops! Entered Number is not standing. \nLets see the boxes again. \nRemember, Dice Total is :" + totalScore) ; 
+		displayBox(standingBoxes) ;		
+
+		choice = parseInt(prompt("Please enter valid number from Standing Boxes")) ;
+	}	
+
+	return choice ;	
+} // end of function // VALIDATE USERS CHOICE
+		
+function checkNumbersCombination(choices,totalScore) // function to check if entered numbers make a combination equal to sum of dice score
+{
+	if((choices[0] + choices[1] == totalScore) && (choices[0] != choices[1])) // if both numbers combine to make score and are not equal to each other
+	{
+		return true ;
+	}
+	
+	else if (choices[0] == choices[1])
+	{
+		alert("Shutting same number twice is not possible!") ;
+	}
+
+	else // as combination already exists, in case user enter two numbers which does not make a combination 
+	{
+		alert("Entered Numbers do not sum up to make Dice Score") ; 
+	}	
+			
+	return false; 
+} // end of function - CHECK NUMBERS COMBINATION
+		
+function getPossibleCombination(standingBoxes,totalScore) // function to find possible combinations for Computer out of dice score and standing boxes
+{
+	let temp = [] ; 			
+	let flag = true ; 
+	let k=0 ;
+		
+	while(flag!=false) // while flag is true 
+	{
+		diff = parseInt(totalScore - standingBoxes[k]) ; // difference is computed as (Difference = Score - Element)
+				
+		if(validateNumberAvailable(standingBoxes,diff) && (diff != standingBoxes[k]) ) // While difference is availale and it is not itself
+		{
+			temp[0] = standingBoxes[k] ;  // stroing element
+			temp[1] = diff ; 							// storing second element (difference)
+			flag = false ; 								// flagging to stop the loop condition
+		}
+				
+		k++ ; // increment in value of counter k to run through array again, however if complete array is already iterated then below if condition applies
+				
+		if(k>standingBoxes.length-1)
+		{
+			flag = false ;  // to come out of while loop after complete array has been iterated and no combination was found
+		}			
+	} // end of while loop
+						
+	return temp ; 		
+} // end of function - GET POSSIBLE COMBINATIONS
+		
+function checkShuttingPossible(standingBoxes,totalScore) // function to check if Shutting is possible in still standing boxes based on score
+{
+	if (validateNumberAvailable(standingBoxes,totalScore) || getPossibleCombination(standingBoxes,totalScore).length > 0 )  
+	{  // if a single number standing OR a combination is available
+		return true ;
+	}
+		
+	return false ;
+} // end of function - CHECK COMBINATION POSSIBLE
+
+function shutFirstNumber(standingBoxes,oneNumber) // function to shut first number in case only one number is to be shut
+{ 
+	let arrayToSplice = standingBoxes.concat() ; // copy of array
+				
+	alert("Box with number " + oneNumber + " is to be shut!") ; 
+	arrayToSplice.splice(arrayToSplice.indexOf(oneNumber),1) ; // splice one element from index of that number
+
+	return arrayToSplice ; 
+} // end of function - SHUT FIRST NUMBER
+
+function shutTwoNumbers(standingBoxes,twoNumbers) // function to shut combination of two numbers 
+{
+	let arrayToSplice = standingBoxes.concat() ; // copy of array 
+		
+	alert("Boxes to shut are: " + twoNumbers[0] + " and " + twoNumbers[1]) ; 
+	arrayToSplice.splice(arrayToSplice.indexOf(twoNumbers[0]),1) ;
+	arrayToSplice.splice(arrayToSplice.indexOf(twoNumbers[1]),1) ;
+	
+	return arrayToSplice ; 
+} // end of function - SHUT TWO NUMBERS COMPUTER
+	
+function shuttingOfComputer(standingBoxes,totalScore) // function to execute shutting of Computer (automated)
+{
+	let boxesToShut = standingBoxes.concat() ; // copy of array
+		
+	if(validateNumberAvailable(boxesToShut,totalScore)) // if score is available in array as single number 
+	{
+		return shutFirstNumber(boxesToShut,totalScore) ;	// call to function to shut first number 
+	}
+		
+	else
+	{
+		return shutTwoNumbers(boxesToShut,getPossibleCombination(boxesToShut,totalScore)) ; // call to local function to shut two numbers  
+	}
+} // end of function - SHUTTING OF COMPUTER
+	
+function shuttingOfUser(standingBoxes,totalScore) // function to execute shutting of User
+{
+	let boxesToShut = standingBoxes.concat() ; // copy of array
+	let userChoices = [] ; // to store choices entered by users
+	
+	userChoices[0] = parseInt(prompt("Please enter the NUMBER you want to shut")) ;
+	userChoices[0] = getUsersChoice(boxesToShut,userChoices[0],totalScore) ; // call to funcion get users choice to get FIRST number by User
+	alert("You entered the number: " + userChoices[0]) ;
+
+	if(userChoices[0] == totalScore && validateNumberAvailable(boxesToShut,userChoices[0])) // if number is same as score and available in boxes
+	{
+		return shutFirstNumber(boxesToShut,userChoices[0]) ;	// call to function to shut first number
+	}
+
+	else // need to get another number
+	{
+		userChoices[1] = parseInt(prompt("Please enter your SECOND NUMBER")) ;
+		userChoices[1] = getUsersChoice(boxesToShut,userChoices[1],totalScore) ; // call to funcion get users choice to get SECOND number by User
+		alert("You entered the number: " + userChoices[1]) ;
+
+		if(checkNumbersCombination(userChoices,totalScore))	// if both numbers combine to make up score  
+		{
+			return shutTwoNumbers(boxesToShut,userChoices) ;	// call to function to shut two numbers
+		}
+	}	
+		
+	return boxesToShut ; 
+} // end of function - SHUTTING OF USER
+		
+function computeWinner(scoreList,playerList) // function to compute and announce winner
+{
+	let winner = '' ;
+		
+	if (scoreList[0]<scoreList[1]) // comparison of score
+	{
+		winner = playerList[0] ; // storing name of winner
+	}
+	else if (scoreList[0]>scoreList[1])
+	{
+		winner = playerList[1] ;
+	}
+		
+	else // to check if scores are equal
+	{ 
+		winner = 'draw' ;
+	}
+	
+	switch(winner) // to announce winner
+	{
+		case	"draw" :
+		alert("Final Score of " + playerList[0] + " is: " + scoreList[0] + " \nFinal Score of " + playerList[1] + " is: " + scoreList[1] + "\nSince both scores are equal! \n\n" + "Match is tied !!!! " )
+		break;
+			
+		default:
+		alert("Final Score of " + playerList[0] + " is: " + scoreList[0] + " \nFinal Score of " + playerList[1] + " is: " + scoreList[1] + "\nSince the one with lowest score wins the game! \n\n" + winner + " has won the game !!!! " )
+		
+	} // end of switch 
+} // end of function - COMPUTE WINNER
+	
+function validateGameAgainChoice(choice)	// function to validate choice (1 or 9 or any other) made by User to check if he wants to play again
+{
+ 	while(choice != 1 && choice != 9)	// while function to iterate until User choose to Play or Exit
+	{
+		choice = prompt("Please select valid choice, \n Press '1' to Start The Game - Press '9' to Exit ") ;
+	}	// end of while
+    
+  return choice ;	// Users choice of 1 or 9 is return to Game Function 
+}	// end of function - VALIDATE GAME AGAIN CHOICE4
+
+// -----------------------------------------------------------------------------   //
+// -------------------------  MAIN PROGRAM IS BELOW  ---------------------------   //
+
+let userSelection = prompt("Are you ready to play Shut The Box? \nPress '1' key to continue! - Press '9' to Exit") ;
+
+userSelection = validateGameAgainChoice(userSelection) ; // calling function to validate User's choice 
+  
+while(userSelection == 1) // While loop to keep playing the game until user exit by selecting value of '9'
+{
+	let players = ['Computer','User']; // if both players are User, then that is also easily possible and vice versa
+	let scores = [] ;
+	let gameBox = [] ;
+	let diceTotal ;
+
+	alert(" !! LETS PLAY SHUT THE BOX !!");
+	
+	for (let i=0 ; i<players.length ; i++) // if game is to be designed so as to accomodate more than 02 players, then that is also possible
+	{
+		gameBox = setupBox();	// setups the board with boxes as standing before start of each players's turn
+		diceTotal = -1 ; 
+
+		alert("This is the start of " + players[i] + "'s Turn!. Are you ready?") ; 
+	
+		displayBox(gameBox) ;	
+		diceTotal = throwTurn(gameBox) ; // call to function throw turn which rolls the dice 
+			
+		while(checkShuttingPossible(gameBox,diceTotal)) // while further shutting is possible, continue with while loop 
+		{
+			if (players[i] == 'Computer') // if player is computer then call to function which executes Automated shutting
+			{
+				gameBox = shuttingOfComputer(gameBox,diceTotal) ; 
+			}
+			
+			if (players[i] == 'User') // if player is User then call to function which involves Interactive shutting
+			{
+				let templength1 = -1 ;
+				let templength2 = -1 ;
+				let count = 0 ;
+				
+				while(templength1 == templength2) // as shutting is possible (above condition), system directs User to select one of the possible combinations
+				{
+					if(count>0) // if user enters wrong combination by mistake, loop will run again. count is used for Interactivity with user with a different message
+					{
+						alert("Hint! Combination is possible. \nLets try another combination. \nDice Total is : " + diceTotal + "\nHere are your Tiles") ;
+						displayBox(gameBox);
+					}
+
+					templength1 = gameBox.length ;  // stores count of boxes standing before shutting
+					
+					gameBox = shuttingOfUser(gameBox,diceTotal) ;  
+					
+					templength2 = gameBox.length ; // stores count of boxes standing afte shutting
+
+					count++ ; 
+				} // end of while with condition to check if user is not entering from possible combinations
+			}
+				
+			if(isBoxStanding(gameBox)) // if after shutting, boxes are still standing. display board to the user and play next roll of dice
+			{
+				displayBox(gameBox) ;
+				diceTotal = throwTurn(gameBox) ;
+			}
+			
+			else // if all boxes are down after the latest shutting, then informing user
+			{
+				alert("WOW! All boxes are Shut. Well Played") ; 
+			}			
+		} // end of while loop with condition to keep executing play until shutting is possible
+		
+		if(isBoxStanding(gameBox)) // if shutting is not possible then informing user
+		{
+			alert("Bad Luck! No Shut is possible this time");
+		}
+		
+		alert(players[i] + "'s Turn is Over, \nLets see the final board situation after " + players[i] + "'s gameplay") ;
+		displayBox(gameBox) ;	// display final board situation after complete turn
+		
+		scores[i] = getSumOfStandingBoxes(gameBox) ;  // storing score of player to decide winner later
+		alert(players[i] + "'s Score is: " + scores[i]) ;
+	}
+
+	computeWinner(scores, players); // calls the function to compute and announce winner
+
+  userSelection = -1 ; // users choice is reset after the game to ask user again
+ 	userSelection = prompt("Do you want to play again? \n Press '1' to continue! - Press '9' to Exit ") ; 
+  userSelection = validateGameAgainChoice(userSelection); // calling function to validate User's choice 
+}
+
+// 'Do you want to play again?' is created to develop interactivity with User everytime game is finished and if s/he want to play again. And if not then User should properly exit. Game can be played as many times as desired
+
+
+
+
